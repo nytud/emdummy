@@ -130,3 +130,6 @@ dmypy.json
 # Temp file from editor
 *~
 .*.swp
+
+# Special, current project related stuff
+xtsv
