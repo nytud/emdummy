@@ -11,11 +11,15 @@ class DummyTagger:
     : class_path: Path to append to the end of CLASS_PATH environment variable when loading in JAVA classes
     : vm_opts: Additional JAVA VM options, when needed appended to the end of the options list
     : pass_header: Pass or strip header when generating output. (Default: True)
-     One may strip header only when the module is the last in the pipeline! Eg. to generate ConLL-U formated output
+    : fixed_order_tsv_input: Use the TSV reader code from xtsv, but without header on fixed columns
+     One may not pass the (output) header only when
+      - the module is the last in the pipeline! Eg. to generate generic fixed-order TSV or ConLL-U formated output
+      - one want to continue the pipeline in fixed-order TSV mode
     """
-    class_path = ''  # TODO set
-    vm_opts = ''  # TODO set
-    pass_header = True  # TODO set
+    class_path = ''  # TODO set or omit
+    vm_opts = ''  # TODO set or omit
+    pass_header = True  # TODO set or omit default: True
+    fixed_order_tsv_input = False  # TODO set or omit default: False
 
     def __init__(self, *_, source_fields=None, target_fields=None):
         """
