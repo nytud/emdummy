@@ -60,3 +60,14 @@ class DummyTagger:
          eg. return [field_names['form'], field_names['lemma'], field_names['xpostag'], ...] )
         """
         return field_names                           # TODO: Implement or overload on inherit
+
+    def process_token(self, token):  # TODO implement or omit
+        """
+        This function is called when the REST API is called in 'one word mode' eg. GET /stem/this_word .
+        It is not mandatory. If not present but sill called by the REST API an exception is raised.
+        See EmMorphPy or HunspellPy for implementation example
+
+        :param token: The input token
+        :return: the processed output of the token preferably raw string or JSON string
+        """
+        return token
