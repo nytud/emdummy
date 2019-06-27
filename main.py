@@ -9,7 +9,7 @@ import sys
 #  (Please add xtsv as git submodule iff you want to use the module alone!)
 from xtsv import init_everything, build_pipeline
 
-from dummytagger.dummytagger import DummyTagger
+from dummytagger import DummyTagger
 
 
 def main():
