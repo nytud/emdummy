@@ -48,6 +48,7 @@ class DummyTagger:
          to process
         :return: the sen object augmented with the output field values for each token
         """
+        [tok.append('*') for tok in sen]
         return sen                                   # TODO: Implement or overload on inherit
 
     def prepare_fields(self, field_names):
