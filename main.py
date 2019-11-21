@@ -7,9 +7,9 @@ import sys
 
 # TODO: Before testing please clone the xtsv module in the working directory to be able to import it
 #  (Please add xtsv as git submodule iff you want to use the module alone!)
-from xtsv import init_everything, build_pipeline
+from xtsv import build_pipeline
 
-from dummytagger import DummyTagger
+# from dummytagger import DummyTagger
 
 
 def main():
@@ -25,14 +25,11 @@ def main():
 
     # The relevant part of config.py
     # from emdummy import DummyTagger
-    em_dummy = (DummyTagger, (), {'source_fields': {'form'}, 'target_fields': []})
-    tools = {'dummy-tagger': em_dummy}
-
-    # Init the selected tools
-    inited_tools = init_everything(tools)
+    em_dummy = ('dummytagger', 'DummyTagger', 'dum', (), {'source_fields': {'form'}, 'target_fields': ['DUMMY']})
+    tools = [(em_dummy, ('dummy-tagger', 'emDummy'))]
 
     # Run the pipeline on input and write result to the output...
-    output_iterator.writelines(build_pipeline(input_iterator, used_tools, inited_tools, presets))
+    output_iterator.writelines(build_pipeline(input_iterator, used_tools, tools, presets))
 
     # TODO this method is recommended when debugging the tool
     # Alternative: Run specific tool for input (still in emtsv format):
