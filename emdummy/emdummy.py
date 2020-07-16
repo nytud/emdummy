@@ -2,7 +2,7 @@
 # -*- coding: utf-8, vim: expandtab:ts=4 -*-
 
 
-class DummyTagger:
+class EmDummy:
     """
     This is a dummy xtsv module. I can be used as a tutorial to write new modules to xtsv
     As some of the modules use JAVA we need to prepare with the static properties in advance before we init those
