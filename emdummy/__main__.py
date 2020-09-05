@@ -30,7 +30,7 @@ def main():
     tools = [(em_dummy, ('dummy', 'dummy-tagger', 'emDummy'))]
 
     # Run the pipeline on input and write result to the output...
-    output_iterator.writelines(build_pipeline(input_data, used_tools, tools, presets))
+    output_iterator.writelines(build_pipeline(input_data, used_tools, tools, presets, opts.conllu_comments))
 
     # TODO this method is recommended when debugging the tool
     # Alternative: Run specific tool for input (still in emtsv format):
