@@ -11,6 +11,7 @@ install:
   # When cython is needed to be installed separately
   # - pip install cython
   - pip install -r requirements-dev.txt
+  # - make install-dep-packages
 script:
   - make ci-test
 deploy:

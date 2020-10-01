@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8, vim: expandtab:ts=4 -*-
 
-from xtsv import build_pipeline, parser_skeleton
+from xtsv import build_pipeline, parser_skeleton, jnius_config
 
 
 def main():
 
     argparser = parser_skeleton(description='EmDummy - a template module for xtsv')
     opts = argparser.parse_args()
+
+    jnius_config.classpath_show_warning = opts.verbose  # Suppress warning.
 
     # Set input and output iterators...
     if opts.input_text is not None:
