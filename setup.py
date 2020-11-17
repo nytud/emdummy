@@ -24,7 +24,7 @@ setuptools.setup(
         'Operating System :: POSIX :: Linux',
     ],
     python_requires='>=3.6',
-    install_requires=['xtsv>=1.0,<2.0',  # TODO: List dependencies at only one file requirements.txt vs. setup.py
+    install_requires=['xtsv>=1.0.0,<2.0.0',
                       ],
     include_package_data=True,
     entry_points={
