@@ -5,7 +5,7 @@ GREEN := $(shell tput setaf 2)
 NOCOLOR := $(shell tput sgr0)
 PYTHON := python3
 VENVDIR := $(CURDIR)/venv
-VENVPIP := $(VENVDIR)/bin/pip
+VENVPIP := $(VENVDIR)/bin/python -m pip
 VENVPYTHON := $(VENVDIR)/bin/python
 
 # Module specific parameters
