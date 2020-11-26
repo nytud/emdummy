@@ -13,8 +13,6 @@ VENVPYTHON := $(VENVDIR)/bin/python
 # DEP_FILE := file
 MODULE := emdummy
 MODULE_PARAMS :=
-TEST_INPUT := input.xtsv
-TEST_OUTPUT := output.xtsv
 
 # Parse version string and create new version. Originally from: https://github.com/mittelholcz/contextfun
 # Variable is empty in Travis-CI if not git tag present
@@ -29,15 +27,8 @@ NEWMAJORVER="$$(( $(MAJOR)+1 )).0.0"
 NEWMINORVER="$(MAJOR).$$(( $(MINOR)+1 )).0"
 NEWPATCHVER="$(MAJOR).$(MINOR).$$(( $(PATCH)+1 ))"
 
-all:
-	@echo "See Makefile for possible targets!"
-
-venv:
-	rm -rf $(VENVDIR)
-	$(PYTHON) -m venv $(VENVDIR)
-	$(VENVPIP) install wheel
-	$(VENVPIP) install -r requirements-dev.txt
-.PHONY: venv
+all: venv build install test
+	@echo "$(GREEN)The package is succesfully installed into the virtualenv ($(VENVDIR)) and all tests are OK!$(NOCOLOR)"
 
 # extra:
 # 	# Do extra stuff (e.g. compiling, downloading) before building the package
@@ -52,77 +43,81 @@ venv:
 
 # check:
 # 	# Check for file or command
-# 	@test -f $(DEP_FILE) >/dev/null 2>&1 || \
-# 		 { echo >&2 "File \`$(DEP_FILE)\` could not be found!"; exit 1; }
-# 	@command -v $(DEP_COMMAND) >/dev/null 2>&1 || { echo >&2 "Command \`$(DEP_COMMAND)\`could not be found!"; exit 1; }
+# 	@[[ -f $(DEP_FILE) ]] || \
+# 		 (echo >&2 "$(RED)File \`$(DEP_FILE)\` could not be found!$(NOCOLOR)"; exit 1)
+# 	@command -v $(DEP_COMMAND) >/dev/null 2>&1 || \
+		(echo >&2 "$(RED)Command \`$(DEP_COMMAND)\`could not be found!$(NOCOLOR)"; exit 1)
 
-dist/*.whl dist/*.tar.gz: venv  # check extra
+venv:
+	@echo "Creating virtualenv...$(NOCOLOR)"
+	rm -rf $(VENVDIR)
+	$(PYTHON) -m venv $(VENVDIR)
+	$(VENVPIP) install wheel
+	$(VENVPIP) install -r requirements-dev.txt
+	@echo "$(GREEN)Virtualenv is succesfully created!$(NOCOLOR)"
+.PHONY: venv
+
+build: venv  # check extra
 	@echo "Building package..."
-	$(VENVPYTHON) setup.py sdist bdist_wheel
+	@[[ -z "$$(ls dist/*.whl dist/*.tar.gz 2> /dev/null)" ]] || \
+		(echo -e "$(RED)dist/*.whl dist/*.tar.gz files exists.\nPlease use 'make clean' before build!$(NOCOLOR)"; \
+		exit 1)
+	@$(VENVPYTHON) setup.py sdist bdist_wheel
+	@echo "$(GREEN)Package is succesfully built!$(NOCOLOR)"
+.PHONY: build
 
-build: dist/*.whl dist/*.tar.gz
-
-install-user: build
+install: build
 	@echo "Installing package to user..."
 	$(VENVPIP) install dist/*.whl
+	@echo "$(GREEN)Package is succesfully installed!$(NOCOLOR)"
+.PHONY: install
 
 test:
 	@echo "Running tests..."
-	time (cd /tmp && $(VENVPYTHON) -m $(MODULE) $(MODULE_PARAMS) -i $(CURDIR)/tests/$(TEST_INPUT) | \
-	diff -sy --suppress-common-lines - $(CURDIR)/tests/$(TEST_OUTPUT) 2>&1 | head -n100)
-
-install-user-test: install-user test
+	@for TEST_INPUT in `$(CURDIR)/tests/*.in`; do \
+		TEST_OUTPUT := ${TEST_INPUT%in}out ; \
+		time (cd /tmp && $(VENVPYTHON) -m $(MODULE) $(MODULE_PARAMS) -i $(TEST_INPUT) | \
+		diff -sy --suppress-common-lines - $(TEST_OUTPUT) 2>&1 | head -n100); \
+	done
 	@echo "$(GREEN)The test was completed successfully!$(NOCOLOR)"
-
-check-version:
 	@echo "Comparing GIT TAG (\"$(TRAVIS_TAG)\") with pacakge version (\"v$(OLDVER)\")..."
 	@[[ "$(TRAVIS_TAG)" == "v$(OLDVER)" || "$(TRAVIS_TAG)" == "" ]] && \
 	  echo "$(GREEN)OK!$(NOCOLOR)" || \
-	  (echo "$(RED)Versions do not match!$(NOCOLOR)" && exit 1)
-
-ci-test: install-user-test check-version
+	  (echo "$(RED)Versions do not match!$(NOCOLOR)"; exit 1)
+.PHONY: test
 
 uninstall:
 	@echo "Uninstalling..."
-	$(VENVPIP) uninstall -y $(MODULE)
-
-install-user-test-uninstall: install-user-test uninstall
+	@[[ ! -d $(VENVDIR) || -z $$($(VENVPIP) list | grep -w $(MODULE)) ]] || $(VENVPIP) uninstall -y $(MODULE)
+	@echo "$(GREEN)The package was uninstalled successfully!$(NOCOLOR)"
+.PHONY: uninstall
 
 clean: # clean-extra
 	rm -rf $(VENVDIR) dist/ build/ $(MODULE).egg-info/
-
-clean-build: clean build
+.PHONY: clean
 
 # Do actual release with new version. Originally from: https://github.com/mittelholcz/contextfun
 release-major:
 	@make -s __release NEWVER=$(NEWMAJORVER)
 .PHONY: release-major
 
-
 release-minor:
 	@make -s __release NEWVER=$(NEWMINORVER)
 .PHONY: release-minor
-
 
 release-patch:
 	@make -s __release NEWVER=$(NEWPATCHVER)
 .PHONY: release-patch
 
-
 __release:
-	@if [[ -z "$(NEWVER)" ]] ; then \
-		echo 'Do not call this target!' ; \
-		echo 'Use "release-major", "release-minor" or "release-patch"!' ; \
-		exit 1 ; \
-		fi
-	@if [[ $$(git status --porcelain) ]] ; then \
-		echo 'Working dir is dirty!' ; \
-		exit 1 ; \
-		fi
+	@[[ ! -z "$(NEWVER)" ]] || \
+		(echo -e "$(RED)Do not call this target!\nUse 'release-major', 'release-minor' or 'release-patch'!$(NOCOLOR)"; \
+		 exit 1)
+	@[[ -z $$(git status --porcelain) ]] || (echo "$(RED)Working dir is dirty!$(NOCOLOR)"; exit 1)
 	@echo "NEW VERSION: $(NEWVER)"
-	@make clean uninstall install-user-test-uninstall
+	# Clean install, test and tidy up
+	@make clean uninstall install test uninstall clean
 	@sed -i -r "s/__version__ = '$(OLDVER)'/__version__ = '$(NEWVER)'/" $(MODULE)/version.py
-	@make check-version
 	@git add $(MODULE)/version.py
 	@git commit -m "Release $(NEWVER)"
 	@git tag -a "v$(NEWVER)" -m "Release $(NEWVER)"
