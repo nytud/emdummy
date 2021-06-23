@@ -6,7 +6,7 @@ import setuptools
 import importlib.util
 
 
-def import_pyhton_file(module_name, file_path):
+def import_python_file(module_name, file_path):
     # Import module from file: https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     module = importlib.util.module_from_spec(spec)
@@ -21,7 +21,7 @@ with open('README.md') as fh:
 setuptools.setup(
     name='emdummy',
     # Get version without actually importing the module (else we need the dependencies installed)
-    version=getattr(import_pyhton_file('version', 'emdummy/version.py'), '__version__'),
+    version=getattr(import_python_file('version', 'emdummy/version.py'), '__version__'),
     author='dlazesz',  # Will warn about missing e-mail
     description='A template module for xtsv',
     long_description=long_description,
