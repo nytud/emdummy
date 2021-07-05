@@ -11,7 +11,7 @@ def main():
 
     jnius_config.classpath_show_warning = opts.verbose  # Suppress warning.
 
-    # Set input and output iterators...
+    # Set input and output iterators from command line args
     if opts.input_text is not None:
         input_data = opts.input_text
     else:
@@ -26,13 +26,32 @@ def main():
 
     # The relevant part of config.py
     # from emdummy import EmDummy
-    em_dummy = ('emdummy', 'EmDummy', 'EXAMPLE (The friendly name of EmDummy used in REST API form)',
-                ('Params', 'goes', 'here'), {'source_fields': {'form'},  # Source field names
-                                             'target_fields': ['star']})  # Target field names
-    tools = [(em_dummy, ('dummy', 'dummy-tagger', 'emDummy'))]
+    em_dummy = (
+        'emdummy', # module name
+        'EmDummy', # class
+        'EmDummy, just add stars to `form`', # friendly name used in REST API form
+        (), # params (currently none)
+        {
+            'source_fields': {'form'}, # source field names
+            'target_fields': ['star']  # target field names
+        }
+    )
+    tools = [
+        (em_dummy, # config
+            ('dummy', 'dummy-tagger', 'emDummy') # aliases
+        )
+    ]
 
-    # Run the pipeline on input and write result to the output...
-    output_iterator.writelines(build_pipeline(input_data, used_tools, tools, presets, opts.conllu_comments))
+    # Run the pipeline -- consisting of one single tool :)
+    output_iterator.writelines(
+        build_pipeline(
+            input_data, # input
+            used_tools, # used tools by alias (currently just em_dummy)
+            tools,      # available tools (currently just em_dummy)
+            presets,    # list of presets (currently none)
+            opts.conllu_comments # are comments allowed?
+        )
+    )
 
     # TODO this method is recommended when debugging the tool
     # Alternative: Run specific tool for input (still in emtsv format):

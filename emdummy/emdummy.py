@@ -40,6 +40,9 @@ class EmDummy:
         self.source_fields = source_fields
         self.target_fields = target_fields
 
+        # if we have only 1 source field we can:
+        self.source_field = next(iter(self.source_fields))
+
     def process_sentence(self, sen, field_names):
         """
         Process one sentence per function call
@@ -47,8 +50,15 @@ class EmDummy:
         :param field_names: the prepared field_names from prepare_fields() to select the appropriate input field
          to process
         :return: the sen object augmented with the output field values for each token
+        Demo functionality: add a new field containing the value of self.source_field field plus two asterisks.
+        The name of the target field is defined in self.target_fields[0].
         """
-        [tok.append('*') for tok in sen]
+        for tok in sen:
+            tok.append(
+                '*' +
+                tok[field_names[self.source_field]]
+                + '*'
+            )
         return sen                                   # TODO: Implement or overload on inherit
 
     def prepare_fields(self, field_names):
