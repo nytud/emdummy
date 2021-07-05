@@ -15,7 +15,7 @@ It is demonstrated that the order of the columns does _not_ affect the operation
 
 For a bit more advanced example see: [`emdummy`](https://github.com/nytud/emdummy).
 
-## python package creation
+## Python package creation
 
 By executing
 
@@ -24,20 +24,20 @@ make
 ```
 
 1. a virtual environment is created in `venv`;
-2. `emdummy` python package is created
+2. `emdummy` Python package is created
 in `dist/emdummy-*-py3-none-any.whl`;
 3. the package is installed in `venv`;
 4. the package is tested (see __testing__).
 
-The python package can be installed anywhere by direct path:
+The Python package can be installed anywhere by direct path:
 
 ```bash
 pip install path/to/emdummy-*-py3-none-any.whl
 ```
 
-## testing
+## Testing
 
-After the python package is ready:
+After the Python package is ready:
 
 ```bash
 make test
