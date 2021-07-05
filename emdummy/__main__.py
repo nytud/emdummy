@@ -43,7 +43,7 @@ def main():
     # Alternative2: Run REST API debug server
     # from xtsv import pipeline_rest_api, singleton_store_factory
     # app = pipeline_rest_api('TEST', tools, {},  conll_comments=False, singleton_store=singleton_store_factory(),
-    #                         form_title='TEST TITLE', doc_link='https://github.com/dlt-rilmta/emdummy')
+    #                         form_title='TEST TITLE', doc_link='https://github.com/nytud/emdummy')
     # app.run()
 
 

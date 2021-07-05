@@ -26,7 +26,7 @@ setuptools.setup(
     description='A template module for xtsv',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/dlt-rilmta/emdummy',
+    url='https://github.com/nytud/emdummy',
     # license='GNU Lesser General Public License v3 (LGPLv3)',  # Never really used in favour of classifiers
     # platforms='any',  # Never really used in favour of classifiers
     packages=setuptools.find_packages(exclude=['tests']),
