@@ -30,11 +30,11 @@ def main():
         'emdummy', # module name
         'EmDummy', # class
         'EmDummy, just add stars to `form`', # friendly name used in REST API form
-        (), # params (currently none)
+        (), # args (currently none)
         {
             'source_fields': {'form'}, # source field names
             'target_fields': ['star']  # target field names
-        }
+        } # kwargs
     )
     tools = [
         (em_dummy, # config
