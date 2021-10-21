@@ -15,12 +15,12 @@ MODULE_PARAMS :=
 
 # These targets do not show as possible target with bash completion
 __extra-deps:
- 	# Do extra stuff (e.g. compiling, downloading) before building the package
+	# Do extra stuff (e.g. compiling, downloading) before building the package
 	@exit 0
 .PHONY: __extra-deps
 
 __clean-extra-deps:
- 	# e.g. @rm -rf stuff
+	# e.g. @rm -rf stuff
 	@exit 0
 .PHONY: __clean-extra-deps
 
