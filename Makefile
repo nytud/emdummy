@@ -56,44 +56,15 @@ install-dep-packages:
 .PHONY: install-dep-packages
 
 venv:
-	@echo "Creating virtualenv in $(VENVDIR)...$(NOCOLOR)"
-	@rm -rf $(VENVDIR)
-	@$(PYTHON) -m venv $(VENVDIR)
-	@$(VENVPIP) install wheel
-	@$(VENVPIP) install -r requirements-dev.txt
-	@echo "$(GREEN)Virtualenv is succesfully created!$(NOCOLOR)"
+	@poetry install
 .PHONY: venv
 
 build: install-dep-packages venv __extra-deps
-	@echo "Building package..."
-	@[[ -z $$(compgen -G "dist/*.whl") && -z $$(compgen -G "dist/*.tar.gz") ]] || \
-		(echo -e "$(RED)dist/*.whl dist/*.tar.gz files exists.\nPlease use 'make clean' before build!$(NOCOLOR)"; \
-		exit 1)
-	@$(VENVPYTHON) setup.py sdist bdist_wheel
-	@echo "$(GREEN)Package is succesfully built!$(NOCOLOR)"
+	@poetry build
 .PHONY: build
 
-install: build
-	@echo "Installing package to user..."
-	$(VENVPIP) install --upgrade dist/*.whl
-	@echo "$(GREEN)Package is succesfully installed!$(NOCOLOR)"
-.PHONY: install
-
 test:
-	@echo "Running tests..."
-	@[[ $$(compgen -G "$(CURDIR)/tests/inputs/*.in") ]] || (echo "$(RED)No input testfiles found!$(NOCOLOR)"; exit 1)
-	r=0; \
-	for test_input in $(CURDIR)/tests/inputs/*.in; do \
-		test_output=$(CURDIR)/tests/outputs/$$(basename $${test_input%in}out) ; \
-		echo; \
-		time (cd /tmp && $(VENVPYTHON) -m $(MODULE) $(MODULE_PARAMS) -i $${test_input} | \
-		diff -sy --suppress-common-lines - $${test_output} 2>&1 | head -n100) || r=$($$r+$$?); \
-	done; \
-	[[ $$r == 0 ]] && echo "$(GREEN)The test was completed successfully!$(NOCOLOR)" || exit $$r
-	@echo "Comparing GIT TAG (\"$(TRAVIS_TAG)\") with pacakge version (\"v$(OLDVER)\")..."
-	@[[ "$(TRAVIS_TAG)" == "v$(OLDVER)" || "$(TRAVIS_TAG)" == "" ]] && \
-	  echo "$(GREEN)OK!$(NOCOLOR)" || \
-	  (echo "$(RED)Versions do not match!$(NOCOLOR)"; exit 1)
+	poetry run pytest --verbose tests/
 .PHONY: test
 
 uninstall:
