@@ -90,9 +90,9 @@ __release:
 	@[[ -z $$(git status --porcelain) ]] || (echo "$(RED)Working dir is dirty!$(NOCOLOR)"; exit 1)
 	@echo "NEW VERSION: $(NEWVER)"
 	# Clean install, test and tidy up
-	@make clean test build
+	# @make clean test build
 	@sed -i -r "s/__version__ = '$(OLDVER)'/__version__ = '$(NEWVER)'/" $(MODULE)/version.py
-	@sed -i -r "s/version = \"$(OLDVER)\"/version = \"$(NEWVER)\"/" pyproject.toml
+	sed -i -r "s/version = \"$(OLDVER)\"/version = \"$(NEWVER)\"/" pyproject.toml
 	# @git add $(MODULE)/version.py
 	# @git commit -m "Release $(NEWVER)"
 	# @git tag -a "v$(NEWVER)" -m "Release $(NEWVER)"
