@@ -25,17 +25,10 @@ def test_entrypoint():
                 assert actual_line == expected_line, f'ERROR: file: {inp_path}; line: {index}'
 
 
-def main():
-    print('TEST MAIN')
-    pairs = get_pairs()
-    pprint(list(pairs))
-    # inp_stream = open('tests/input/test1.tsv')
-    # out_stream = StringIO()
-    # entrypoint(inp_stream, out_stream)
-    # inp_stream.close()
-    # res = out_stream.getvalue()
-    # print(res, end='')
-    # out_stream.close()
+# def main():
+#     print('TEST MAIN')
+
 
 if __name__ == '__main__':
-    main()
+    # main()
+    pass
