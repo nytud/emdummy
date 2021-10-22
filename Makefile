@@ -5,9 +5,6 @@ RED := $(shell tput setaf 1)
 GREEN := $(shell tput setaf 2)
 NOCOLOR := $(shell tput sgr0)
 PYTHON := python3
-VENVDIR := $(CURDIR)/venv
-VENVPIP := $(VENVDIR)/bin/python -m pip
-VENVPYTHON := $(VENVDIR)/bin/python
 
 # Module specific parameters
 MODULE := emdummy
@@ -39,8 +36,9 @@ NEWMAJORVER="$$(( $(MAJOR)+1 )).0.0"
 NEWMINORVER="$(MAJOR).$$(( $(MINOR)+1 )).0"
 NEWPATCHVER="$(MAJOR).$(MINOR).$$(( $(PATCH)+1 ))"
 
-all: clean venv build install test
-	@echo "$(GREEN)The package is succesfully installed into the virtualenv ($(VENVDIR)) and all tests are OK!$(NOCOLOR)"
+all: clean venv test
+	@echo "all: clean, venv, test"
+.PHONY: all
 
 install-dep-packages:
 	@echo "Installing needed packages from Aptfile..."
@@ -67,14 +65,9 @@ test:
 	poetry run pytest --verbose tests/
 .PHONY: test
 
-uninstall:
-	@echo "Uninstalling..."
-	@[[ ! -d "$(VENVDIR)" || -z $$($(VENVPIP) list | grep -w $(MODULE)) ]] || $(VENVPIP) uninstall -y $(MODULE)
-	@echo "$(GREEN)The package was uninstalled successfully!$(NOCOLOR)"
-.PHONY: uninstall
 
 clean: __clean-extra-deps
-	@rm -rf $(VENVDIR) dist/ build/ $(MODULE).egg-info/
+	@rm -rf dist/ build/ $(MODULE).egg-info/
 .PHONY: clean
 
 # Do actual release with new version. Originally from: https://github.com/mittelholcz/contextfun
@@ -97,11 +90,13 @@ __release:
 	@[[ -z $$(git status --porcelain) ]] || (echo "$(RED)Working dir is dirty!$(NOCOLOR)"; exit 1)
 	@echo "NEW VERSION: $(NEWVER)"
 	# Clean install, test and tidy up
-	@make clean uninstall install test uninstall clean
+	@make clean test build
 	@sed -i -r "s/__version__ = '$(OLDVER)'/__version__ = '$(NEWVER)'/" $(MODULE)/version.py
-	@git add $(MODULE)/version.py
-	@git commit -m "Release $(NEWVER)"
-	@git tag -a "v$(NEWVER)" -m "Release $(NEWVER)"
-	@git push
-	@git push --tags
+	@sed -i -r 's/version = "$(OLDVER)"/version = "$(NEWVER)"/' pyproject.toml
+	# @git add $(MODULE)/version.py
+	# @git commit -m "Release $(NEWVER)"
+	# @git tag -a "v$(NEWVER)" -m "Release $(NEWVER)"
+	# @git push
+	# @git push --tags
+	# @poetry publish
 .PHONY: __release
