@@ -3,5 +3,6 @@
 
 from .emdummy import EmDummy
 from .version import __version__
+from .__main__ import entrypoint
 
-__all__ = ['EmDummy', __version__]
+__all__ = ['EmDummy', __version__, entrypoint]
