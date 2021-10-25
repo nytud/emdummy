@@ -1,7 +1,7 @@
 from io import StringIO
 from pathlib import Path
-from pprint import pprint
-import pytest
+# from pprint import pprint
+# import pytest
 
 from emdummy import entrypoint
 

@@ -11,6 +11,7 @@ def entrypoint(input, output, verbose=False, comments=False, header=False):
     # Set the tagger name as in the tools dictionary
     used_tools = ['dummy']
     presets = []
+
     # Init and run the module as it were in xtsv
 
     # The relevant part of config.py
