@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "emdummy"
-version = "1.0.1"
+version = "1.0.2"
 description = "A template module for xtsv"
 authors = ["dlazesz"]
 license = "LGPLv3"

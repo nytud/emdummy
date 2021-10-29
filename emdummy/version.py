@@ -1,4 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8, vim: expandtab:ts=4 -*-
+import sys
 
-__version__ = '1.0.1'
+if sys.version_info >= (3, 8):
+    from importlib import metadata
+else:
+    import importlib_metadata as metadata
+
+
+__version__ = metadata.version('emdummy')
+
+
+if __name__ == '__main__':
+    print(__version__)
