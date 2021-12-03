@@ -26,7 +26,7 @@ __clean-extra-deps:
 # Parse version string and create new version. Originally from: https://github.com/mittelholcz/contextfun
 # Variable is empty in Travis-CI if not git tag present
 TRAVIS_TAG ?= ""
-OLDVER := $$(grep -P -o "(?<=__version__ = ')[^']+" $(MODULE)/version.py)
+OLDVER := $$(grep -P -o '(?<=version = ")[^"]+' pyproject.toml)
 
 MAJOR := $$(echo $(OLDVER) | sed -r s"/([0-9]+)\.([0-9]+)\.([0-9]+)/\1/")
 MINOR := $$(echo $(OLDVER) | sed -r s"/([0-9]+)\.([0-9]+)\.([0-9]+)/\2/")
@@ -61,25 +61,33 @@ build: install-dep-packages venv __extra-deps
 	@poetry build
 .PHONY: build
 
+# Install the actual wheel package to test it in later steps
+install: build
+	 @poetry run pip install --upgrade dist/*.whl
+.PHONY: install
+
 test:
 	poetry run pytest --verbose tests/
 .PHONY: test
 
-
 clean: __clean-extra-deps
-	@rm -rf dist/ build/ $(MODULE).egg-info/
+	rm -rf dist/ build/ $(MODULE).egg-info/ $$(poetry env info -p)
 .PHONY: clean
 
 # Do actual release with new version. Originally from: https://github.com/mittelholcz/contextfun
+# poetry version will modify pyproject.toml only. The other steps must be done manually.
 release-major:
+	@poetry version major
 	@make -s __release NEWVER=$(NEWMAJORVER)
 .PHONY: release-major
 
 release-minor:
+	@poetry version minor
 	@make -s __release NEWVER=$(NEWMINORVER)
 .PHONY: release-minor
 
 release-patch:
+	@poetry version patch
 	@make -s __release NEWVER=$(NEWPATCHVER)
 .PHONY: release-patch
 
@@ -91,9 +99,7 @@ __release:
 	@echo "NEW VERSION: $(NEWVER)"
 	# Clean install, test and tidy up
 	@make clean test build
-	@sed -i -r "s/__version__ = '$(OLDVER)'/__version__ = '$(NEWVER)'/" $(MODULE)/version.py
-	@sed -i -r "s/version = \"[0-9]+\.[0-9]+\.[0-9]+\"/version = \"$(NEWVER)\"/" pyproject.toml
-	@git add $(MODULE)/version.py
+	@git add $(MODULE)/pyproject.toml
 	@git commit -m "Release $(NEWVER)"
 	@git tag -a "v$(NEWVER)" -m "Release $(NEWVER)"
 	@git push

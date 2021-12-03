@@ -4,7 +4,7 @@
 from xtsv import build_pipeline, parser_skeleton, jnius_config
 
 
-def entrypoint(input, output, verbose=False, comments=False, header=False):
+def entrypoint(input_data, output, verbose=False, comments=False, header=False):
 
     jnius_config.classpath_show_warning = verbose  # Suppress warning.
 
@@ -17,29 +17,29 @@ def entrypoint(input, output, verbose=False, comments=False, header=False):
     # The relevant part of config.py
     # from emdummy import EmDummy
     em_dummy = (
-        'emdummy', # module name
-        'EmDummy', # class
-        'EmDummy, just add stars to `form`', # friendly name used in REST API form
-        (), # args (currently none)
+        'emdummy',  # module name
+        'EmDummy',  # class
+        'EmDummy, just add stars to `form`',  # friendly name used in REST API form
+        (),  # args (currently none)
         {
-            'source_fields': {'form'}, # source field names
-            'target_fields': ['star']  # target field names
-        } # kwargs
+            'source_fields': {'form'},  # source field names
+            'target_fields': ['star']   # target field names
+        }  # kwargs
     )
     tools = [
-        (em_dummy, # config
-            ('dummy', 'dummy-tagger', 'emDummy') # aliases
-        )
+        (em_dummy,  # config
+            ('dummy', 'dummy-tagger', 'emDummy')  # aliases
+         )
     ]
 
     # Run the pipeline -- consisting of one single tool :)
     output.writelines(
         build_pipeline(
-            input, # input
-            used_tools, # used tools by alias (currently just em_dummy)
-            tools,      # available tools (currently just em_dummy)
-            presets,    # list of presets (currently none)
-            comments # are comments allowed?
+            input_data,  # input data (string iterator, file handle or str)
+            used_tools,  # used tools by alias (currently just em_dummy)
+            tools,       # available tools (currently just em_dummy)
+            presets,     # list of presets (currently none)
+            comments     # are comments allowed?
         )
     )
 
@@ -66,14 +66,12 @@ def main():
     else:
         input_data = opts.input_stream
     entrypoint(
-        input=input_data,
+        input_data=input_data,
         output=opts.output_stream,
         verbose=opts.verbose,
         comments=opts.conllu_comments,
         header=opts.output_header
     )
-
-
 
 
 if __name__ == '__main__':
