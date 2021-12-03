@@ -5,6 +5,8 @@ dist: bionic
 sudo: true
 python:
   - '3.7'
+before_install:
+  - pip install poetry
 install:
   # Install packages with APT
   # - make install-dep-packages
