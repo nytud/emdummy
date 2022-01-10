@@ -93,11 +93,11 @@ install: build
 test:
 	@echo "$(BOLD)Running tests...$(NONE)"
 	@[[ $$(compgen -G "$(CURDIR)/tests/inputs/*.in") ]] || (echo "$(RED)No input testfiles found!$(NONE)"; exit 1)
-	@r=0; \
+	r=0; \
 	for test_input in $(CURDIR)/tests/inputs/*.in; do \
 		test_output=$(CURDIR)/tests/outputs/$$(basename $${test_input%in}out) ; \
 		echo "Using testfile: $$test_input"; \
-		(cd /tmp && $(VENVPYTHON) -m $(MODULE) $(MODULE_PARAMS) -i $${test_input} | \
+		time (cd /tmp && $(VENVPYTHON) -m $(MODULE) $(MODULE_PARAMS) -i $${test_input} | \
 		diff -sy --suppress-common-lines - $${test_output} 2>&1 | head -n100) || r=$($$r+$$?); \
 	done; \
 	[[ $$r == 0 ]] && echo "$(GREEN)5/5 The test was completed successfully!$(NONE)" && echo || exit $$r

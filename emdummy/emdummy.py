@@ -73,7 +73,7 @@ class EmDummy:
          mapped to their column index in the input stream ordered by appearance,
          plus target field names added at the end with incrementing indices;
          and vice versa: column indices mapped to the corresponding input field name;
-         to be able to convert in noth directions. 
+         to be able to convert in both directions.
          E.g. {'form': 0, 'wsafter': 1, 0: 'form', 1: 'wsafter'}
         :return: appropriate info about fields needed for `process_sentence()`.
         """
@@ -82,18 +82,17 @@ class EmDummy:
         return field_names                           # TODO: Implement or overload on inherit
 
         # 2. a dict containing only the name->index direction.
-        #return {k: v for k, v in field_names.items() if isinstance(k, str)}
+        # return {k: v for k, v in field_names.items() if isinstance(k, str)}
 
         # 3. an int which is the index of the source field, if there is only one source field.
-        #return field_names[next(iter(self.source_fields))]
+        # return field_names[next(iter(self.source_fields))]
 
         # 4. Alternatively, we can store field names ordered in a class variable
         #    to be able to create dicts from tokens and return `None` here.
-        #self.field_order = [k for k in field_names.keys() if isinstance(k, str)]
-        #return None
+        # self.field_order = [k for k in field_names.keys() if isinstance(k, str)]
+        # return None
 
         # etc.
-
 
     def process_token(self, token):  # TODO implement or omit
         """
