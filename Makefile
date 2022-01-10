@@ -14,12 +14,12 @@ PYTHON := python3
 MODULE := emdummy
 
 # These targets do not show as possible target with bash completion
-	# Do extra stuff (e.g. compiling, downloading) before building the package
+# Do extra stuff (e.g. compiling, downloading) before building the package
 __extra-deps:
 	@exit 0
 .PHONY: __extra-deps
 
-	# e.g. @rm -rf stuff
+# e.g. @rm -rf stuff
 __clean-extra-deps:
 	@exit 0
 .PHONY: __clean-extra-deps
