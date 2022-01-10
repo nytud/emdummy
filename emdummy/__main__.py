@@ -25,7 +25,6 @@ def main():
     # Init and run the module as it were in xtsv
 
     # The relevant part of config.py
-    # from emdummy import EmDummy
     em_dummy = (
         'emdummy', # module name
         'EmDummy', # class
