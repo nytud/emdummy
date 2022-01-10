@@ -10,13 +10,8 @@ NONE := $(shell tput sgr0)
 
 PYTHON := python3
 
-VENVDIR := $(CURDIR)/venv
-VENVPIP := $(VENVDIR)/bin/python -m pip
-VENVPYTHON := $(VENVDIR)/bin/python
-
 # Module specific parameters
 MODULE := emdummy
-MODULE_PARAMS :=
 
 # These targets do not show as possible target with bash completion
 # Do extra stuff (e.g. compiling, downloading) before building the package
@@ -31,118 +26,99 @@ __clean-extra-deps:
 
 # From here only generic parts
 
-# Parse version string and create new version. Originally from: https://github.com/mittelholcz/contextfun
-# Variable is empty in Travis-CI if not git tag present
-TRAVIS_TAG ?= ""
-OLDVER := $$(grep -P -o "(?<=__version__ = ')[^']+" $(MODULE)/version.py)
-
-MAJOR := $$(echo $(OLDVER) | sed -r s"/([0-9]+)\.([0-9]+)\.([0-9]+)/\1/")
-MINOR := $$(echo $(OLDVER) | sed -r s"/([0-9]+)\.([0-9]+)\.([0-9]+)/\2/")
-PATCH := $$(echo $(OLDVER) | sed -r s"/([0-9]+)\.([0-9]+)\.([0-9]+)/\3/")
-
-NEWMAJORVER="$$(( $(MAJOR)+1 )).0.0"
-NEWMINORVER="$(MAJOR).$$(( $(MINOR)+1 )).0"
-NEWPATCHVER="$(MAJOR).$(MINOR).$$(( $(PATCH)+1 ))"
-
-all: clean venv build install test
+all: clean venv install test
+	@echo "all: clean, venv, install, test"
 	@echo
-	@echo "$(GREEN)Package $(MODULE) is successfully installed into venv and all tests are OK! :)$(NONE)"
+	@echo "$(GREEN)Package $(MODULE) is successfully installed and all tests are OK! :)$(NONE)"
 	@echo
+.PHONY: all
 
 install-dep-packages:
 	@echo "$(BOLD)Installing needed packages from Aptfile...$(NONE)"
-	@command -v apt-get >/dev/null 2>&1 || \
-			(echo >&2 "$(RED)Command 'apt-get' could not be found!$(NONE)"; exit 1)
-	# Aptfile can be omited if empty
-	@[[ ! -f "$(CURDIR)/Aptfile" ]] || \
-	    ([[ $$(dpkg -l | grep -wcf $(CURDIR)/Aptfile) -eq $$(cat $(CURDIR)/Aptfile | wc -l) ]] || \
-		(sudo -E apt-get update && \
-		sudo -E apt-get -yq --no-install-suggests --no-install-recommends $(travis_apt_get_options) install \
-			`cat $(CURDIR)/Aptfile`))
+	@# Aptfile can be omited if empty
+	@[[ ! -s "$(CURDIR)/Aptfile" ]] || \
+	  ((command -v apt >/dev/null 2>&1 || (echo >&2 "$(RED)Command 'apt' could not be found!$(NOCOLOR)"; exit 1)) && \
+	   ([[ $$(dpkg -l | grep -wcf $(CURDIR)/Aptfile) -ne $$(cat $(CURDIR)/Aptfile | wc -l) ]] || \
+	    (sudo -E apt-get update && \
+	     sudo -E apt-get -yq --no-install-suggests --no-install-recommends $(travis_apt_get_options) \
+	      install `cat $(CURDIR)/Aptfile`)))
 	@echo "$(GREEN)2/5 Needed packages are successfully installed!$(NONE)"
-	@echo
 .PHONY: install-dep-packages
 
 venv:
-	@echo "$(BOLD)Creating virtualenv in $(VENVDIR)...$(NONE)"
-	@rm -rf $(VENVDIR)
-	@$(PYTHON) -m venv $(VENVDIR)
-	@$(VENVPIP) install wheel
-	@$(VENVPIP) install -r requirements-dev.txt
+	@echo "$(BOLD)Creating virtualenv...$(NONE)"
+	@poetry install --no-root
 	@echo "$(GREEN)1/5 Virtualenv is successfully created!$(NONE)"
 	@echo
 .PHONY: venv
 
 build: install-dep-packages venv __extra-deps
 	@echo "$(BOLD)Building package...$(NONE)"
-	@[[ -z $$(compgen -G "dist/*.whl") && -z $$(compgen -G "dist/*.tar.gz") ]] || \
-		(echo -e "$(RED)dist/*.whl dist/*.tar.gz files exists.\nPlease use 'make clean' before build!$(NONE)"; \
-		exit 1)
-	@$(VENVPYTHON) setup.py sdist bdist_wheel
+	@poetry build
 	@echo "$(GREEN)3/5 Package $(MODULE) is successfully built!$(NONE)"
 	@echo
 .PHONY: build
 
+# Install the actual wheel package to test it in later steps
 install: build
 	@echo "$(BOLD)Installing package to user...$(NONE)"
-	$(VENVPIP) install --upgrade dist/*.whl
+	 @poetry run pip install --upgrade dist/*.whl
 	@echo "$(GREEN)4/5 Package $(MODULE) is successfully installed!$(NONE)"
 	@echo
 .PHONY: install
 
+# Upload to PyPi with poetry (with token if $$PYPI_TOKEN is specified)
+upload:
+	@[[ ! -z "$(PYPI_TOKEN)" ]] && poetry publish --username "__token__" --password $(PYPI_TOKEN) || poetry publish
+.PHONY: upload
+
 test:
 	@echo "$(BOLD)Running tests...$(NONE)"
-	@[[ $$(compgen -G "$(CURDIR)/tests/inputs/*.in") ]] || (echo "$(RED)No input testfiles found!$(NONE)"; exit 1)
-	r=0; \
-	for test_input in $(CURDIR)/tests/inputs/*.in; do \
-		test_output=$(CURDIR)/tests/outputs/$$(basename $${test_input%in}out) ; \
-		echo "Using testfile: $$test_input"; \
-		time (cd /tmp && $(VENVPYTHON) -m $(MODULE) $(MODULE_PARAMS) -i $${test_input} | \
-		diff -sy --suppress-common-lines - $${test_output} 2>&1 | head -n100) || r=$($$r+$$?); \
-	done; \
-	[[ $$r == 0 ]] && echo "$(GREEN)5/5 The test was completed successfully!$(NONE)" && echo || exit $$r
-	@echo "Comparing GIT TAG (\"$(TRAVIS_TAG)\") with package version (\"v$(OLDVER)\")..."
-	@[[ "$(TRAVIS_TAG)" == "v$(OLDVER)" || "$(TRAVIS_TAG)" == "" ]] && \
-	  echo "$(GREEN)OK!$(NONE)" || \
-	  (echo "$(RED)Versions do not match!$(NONE)"; exit 1)
+	poetry run pytest --verbose tests/
+	echo "$(GREEN)5/5 The test was completed successfully!$(NONE)"
 .PHONY: test
 
-uninstall:
-	@echo "Uninstalling..."
-	@[[ ! -d "$(VENVDIR)" || -z $$($(VENVPIP) list | grep -w $(MODULE)) ]] || $(VENVPIP) uninstall -y $(MODULE)
-	@echo "$(GREEN)Package $(MODULE) was uninstalled successfully!$(NONE)"
-.PHONY: uninstall
-
 clean: __clean-extra-deps
-	@rm -rf $(VENVDIR) dist/ build/ $(MODULE).egg-info/
+	@rm -rf dist/ .pytest_cache/ $$(poetry env info -p)
 .PHONY: clean
 
 # Do actual release with new version. Originally from: https://github.com/mittelholcz/contextfun
 release-major:
-	@make -s __release NEWVER=$(NEWMAJORVER)
+	@make -s __release BUMP="major"
 .PHONY: release-major
 
 release-minor:
-	@make -s __release NEWVER=$(NEWMINORVER)
+	@make -s __release BUMP="minor"
 .PHONY: release-minor
 
 release-patch:
-	@make -s __release NEWVER=$(NEWPATCHVER)
+	@make -s __release BUMP="patch"
 .PHONY: release-patch
 
 __release:
-	@[[ ! -z "$(NEWVER)" ]] || \
-		(echo -e "$(RED)Do not call this target!\nUse 'release-major', 'release-minor' or 'release-patch'!$(NONE)"; \
+	@[[ "$(BUMP)" == "major" || "$(BUMP)" == "minor" || "$(BUMP)" == "patch" ]] || \
+		(echo -e "$(RED)Do not call this target!\nUse 'release-major', 'release-minor' or 'release-patch'!$(NOCOLOR)"; \
 		 exit 1)
-	@[[ -z $$(git status --porcelain) ]] || (echo "$(RED)Working dir is dirty!$(NONE)"; exit 1)
-	@echo "NEW VERSION: $(NEWVER)"
-	# Clean install, test and tidy up
-	@make clean uninstall install test uninstall clean
-	@sed -i -r "s/__version__ = '$(OLDVER)'/__version__ = '$(NEWVER)'/" $(MODULE)/version.py
-	@git add $(MODULE)/version.py
-	@git commit -m "Release $(NEWVER)"
-	@git tag -a "v$(NEWVER)" -m "Release $(NEWVER)"
-	@git push
-	@git push --tags
+	@[[ -z $$(git status --porcelain) ]] || (echo "$(RED)Working dir is dirty!$(NOCOLOR)"; exit 1)
+	@# Update dependencies before buiding and testing (closest to clean install)
+	@poetry update
+	@# poetry version will modify pyproject.toml only. The other steps must be done manually.
+	@poetry version $(BUMP)
+	@# Add modified files to git before commit
+	@git add pyproject.toml poetry.lock
+	@# Clean install with (built package) and test
+	@make all
+	@# Create release commit and git tag
+	@make -S __commit_to_origin NEWVER=$$(poetry run python src/$(MODULE)/version.py)
 .PHONY: __release
 
+__commit_to_origin:
+	@[[ ! -z "$(NEWVER)" ]] || \
+		(echo -e "$(RED)Do not call this target!\nUse 'release-major', 'release-minor' or 'release-patch'!$(NOCOLOR)"; \
+		 exit 1)
+	@echo "NEW VERSION: $(NEWVER)"
+	@git commit -m "Release $(NEWVER)"
+	@git tag -a "v$(NEWVER)" -m "Release v$(NEWVER)"
+	@git push
+	@git push --tags
+.PHONY: __commit_to_origin

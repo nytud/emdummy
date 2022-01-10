@@ -1,51 +1,84 @@
 # `emdummy`
 
-A template module for getting started
+A template module for xtsv
+
+Take a look at this toy module for getting started
 writing an [`xtsv`](https://github.com/nytud/xtsv) module.
 
-The demo task what this module solves is the following:
- * take the value of the `form` field;
+This module is for educational purposes.
+It solves an extremely simple task:
+ * takes the value of the `form` field;
  * create a new field called `star` which will contain the value of the `form` field together with an added asterisk on both sides.
 
-E.g. if the `form` field is `kutya` the `star` field will be `*kutya*`.\
-It is also demonstrated that the order of the columns does _not_ affect the operation of `xtsv`.
+E.g. if the `form` field is `kutya` the `star` field will be `*kutya*`.
+
+It is demonstrated that the order of the columns does _not_ affect the operation of `xtsv`.
 
 # Content howto
 
-1. Create your module as a new repo based on this template repo, name it `emNAME`.\
-   Change all `dummy/Dummy` occurrences to `NAME` with appropriate letter casing in all files in [`emdummy`](emdummy), [`Makefile`](Makefile) and [`setup.py`](setup.py).\
-   Set also author etc. in the latter.\
-   In mind, replace `dummy` with `NAME` everywhere in the rest of this document.
-2. Set `source_fields` (names of fields your module uses as input) and `target_fields` (names of fields your module adds) in [`emdummy/__main__.py`](emdummy/__main__.py).
-3. See comments in [`emdummy/emdummy.py`](emdummy/emdummy.py) for further information.
-4. Write a brand new `README.md`.
-
-# Technical howto
-
 ## Python package creation
 
-Just type `make` to run all the following.
+[_Poetry_](https://python-poetry.org/) and (optionally) [_GNU Make_](https://www.gnu.org/software/make/) are required.
 
-1. A virtual environment is created in `venv`.
-2. `emdummy` Python package is created in `dist/emdummy-*-py3-none-any.whl`.
-3. The package is installed in `venv`. 
-4. The package is unit tested on `tests/inputs/*.in` and outputs are compared with `tests/outputs/*.out`.
+1. `git clone https://github.com/REPO_NAME.git`
+2. Run `make`
+
+On Windows or without Make (after cloning the repository):
+
+1. `poetry install --no-root`
+2. `poetry build`
+3. `poetry run pip install --upgrade dist/*.whl` (the correct filename must be specified on Windows)
+
+(optional) To install extras run: `poetry install -E [NAME OF THE EXTRA TO INSTALL]`
+
+By executing `make` you run all the following:
+
+1. a virtual environment is created;
+2. `emdummy` Python package is created in `dist/emdummy-*-py3-none-any.whl`;
+3. the package is installed in the virtualenv;
+4. the package is tested (see [__testing__](#testing)).
 
 The above steps can be performed separately by `make venv`, `make build`, `make install` and `make test` respectively.
 
-The created Python package can be installed anywhere by direct path:
+The Python package can be installed anywhere by direct path:
+
 ```bash
-pip install ./dist/emdummy-*-py3-none-any.whl
+pip install path/to/emdummy-*-py3-none-any.whl
 ```
 
-## Python package release
+## Create your own module
 
-1. Check [`emdummy/version.py`](emdummy/version.py). Before your _very first_ release, set `__version__ = '0.0.0'`.
-2. `make release-major` or `make release-minor` or `make release-patch`. If in doubt, [read about semantic versoning](https://semver.org).\
-   This will update the version number appropriately and make a `git commit` with a new `git` TAG.
-3. `make` to recreate the package with the new tag in `dist/emdummy-TAG-py3-none-any.whl`.
-4. Go to `https://github.com/THISUSER/emdummy` and _"Create release from tag"_.
-5. Add wheel file from `dist/emdummy-TAG-py3-none-any.whl` manually to the release.
+1. Create your module as a new repo based on this template repo, name it `emNAME`.\
+   Change all `dummy/Dummy` occurrences to `NAME` with appropriate letter casing in all files in [`src/emdummy`](src/emdummy), [`Makefile`](Makefile) and [`pyproject.toml`](pyproject.toml). \
+   Set also author etc. in the latter. \
+   In mind, replace `dummy` with `NAME` everywhere in the rest of this document.
+2. Set `source_fields` (names of fields your module uses as input) and `target_fields` (names of fields your module adds) in [`src/emdummy/__main__.py`](src/emdummy/__main__.py).
+3. See comments in [`src/emdummy/emdummy.py`](src/emdummy/emdummy.py) for further information.
+4. Write a brand new `README.md`.
+
+## Testing
+
+After the Python package is ready:
+
+```bash
+make test
+```
+
+runs `emdummy` on `tests/input/*.tsv`
+and compares the output with `tests/gold/*.tsv`.
+
+## Setting up CI/CD environment
+
+See information in [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+
+1. Check [`pyproject.toml`](pyproject.toml). Before your _very first_ release, set `version = "0.0.0"`.
+2. `make release-major` or `make release-minor` or `make release-patch`. If in doubt, [read about semantic versoning](https://semver.org).
+This will (if [CI/CD has been set up correctly](#setting up CI-CD-environment))
+   - Update the version number appropriately
+   - Make a `git commit`
+   - Make a `git` TAG
+   - Release the package on github
+   - Upload a new pypi package
 
 ## Add the released package to `emtsv`
 
