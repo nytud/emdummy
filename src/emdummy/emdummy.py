@@ -7,6 +7,7 @@ class EmDummy:
     A template module for getting started writing an xtsv (https://github.com/nytud/xtsv) module.
 
     Notes on tsv header and tsv field order.
+    : add_newline_after_sentence: add newline after each sentence or not (e.g. for finalizers). (Default: True)
     : pass_header: pass or throw away header when generating output. (Default: True)
     : fixed_order_tsv_input: use the TSV reader code from xtsv, but without header on fixed columns.
     One may not pass the (output) header only when
@@ -19,6 +20,7 @@ class EmDummy:
     : class_path: path to append to the end of CLASS_PATH environment variable when loading in JAVA classes
     : vm_opts: additional JAVA VM options, when needed appended to the end of the options list
     """
+    add_newline_after_sentence = True  # TODO set or omit default: True
     pass_header = True  # TODO set or omit default: True
     fixed_order_tsv_input = False  # TODO set or omit default: False
     class_path = ''  # TODO set or omit
